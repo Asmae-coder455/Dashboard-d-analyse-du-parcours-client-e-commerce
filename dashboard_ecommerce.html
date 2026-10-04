@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KitchenTools — Analyse E-commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e2a;
+    --border: #252a38;
+    --accent: #e8c547;
+    --accent2: #4fc3f7;
+    --accent3: #f06292;
+    --accent4: #81c784;
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+    --red: #ef5350;
+    --green: #66bb6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-block h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .logo-block h1 span { color: var(--accent); }
+  .logo-block p {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+  .header-meta {
+    text-align: right;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(102,187,106,0.1);
+    border: 1px solid rgba(102,187,106,0.3);
+    color: var(--green);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi-card.yellow::before { background: var(--accent); }
+  .kpi-card.blue::before   { background: var(--accent2); }
+  .kpi-card.pink::before   { background: var(--accent3); }
+  .kpi-card.green::before  { background: var(--accent4); }
+
+  .kpi-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+  .kpi-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .kpi-card.yellow .kpi-value { color: var(--accent); }
+  .kpi-card.blue   .kpi-value { color: var(--accent2); }
+  .kpi-card.pink   .kpi-value { color: var(--accent3); }
+  .kpi-card.green  .kpi-value { color: var(--accent4); }
+
+  .kpi-sub {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+  }
+  .kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+  .trend-up   { background: rgba(102,187,106,0.12); color: var(--green); }
+  .trend-down { background: rgba(239,83,80,0.12);   color: var(--red); }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  .chart-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+  }
+  .chart-subtitle {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+  }
+  canvas { max-height: 220px; }
+
+  /* FUNNEL */
+  .funnel-container { padding: 0.5rem 0; }
+  .funnel-step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+    animation: fadeUp 0.5s ease both;
+  }
+  .funnel-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    width: 90px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .funnel-bar-wrap {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+  .funnel-bar {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  .funnel-count {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    width: 50px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .funnel-drop {
+    font-size: 0.6rem;
+    color: var(--red);
+    width: 42px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* SOURCE TABLE */
+  .source-table { width: 100%; border-collapse: collapse; }
+  .source-table th {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .source-table td {
+    font-size: 0.7rem;
+    padding: 0.55rem 0.5rem;
+    border-bottom: 1px solid rgba(37,42,56,0.5);
+    color: var(--text-dim);
+  }
+  .source-table tr:last-child td { border-bottom: none; }
+  .source-badge {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .conv-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .conv-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .conv-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* TIME CARD */
+  .time-metrics { display: flex; flex-direction: column; gap: 1rem; }
+  .time-metric {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+  }
+  .time-metric-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+  .time-metric-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .time-metric-unit { font-size: 0.65rem; color: var(--text-muted); }
+
+  /* FOOTER */
+  footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer p {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .tech-pills { display: flex; gap: 6px; }
+  .pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.58rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+  .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+  .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <h1>Kitchen<span>Tools</span></h1>
+    <p>E-commerce Analytics Dashboard</p>
+  </div>
+  <div class="header-meta">
+    <div class="live-badge"><span class="live-dot"></span> LIVE DATA</div>
+    <div>Dataset Kaggle · user_events</div>
+    <div>Analyse SQL · MySQL · Python · JavaScript</div>
+    <div id="current-date"></div>
+  </div>
+</header>
+
+<!-- KPI CARDS -->
+<div class="kpi-grid">
+  <div class="kpi-card yellow">
+    <div class="kpi-label">Chiffre d'affaires total</div>
+    <div class="kpi-value" id="kpi-ca">—</div>
+    <div class="kpi-sub">Toutes sources confondues</div>
+    <div class="kpi-trend trend-up">↑ +12.4% vs mois préc.</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-label">Panier moyen</div>
+    <div class="kpi-value" id="kpi-aov">—</div>
+    <div class="kpi-sub">Par commande</div>
+    <div class="kpi-trend trend-up">↑ +3.1%</div>
+  </div>
+  <div class="kpi-card pink">
+    <div class="kpi-label">Taux de conversion global</div>
+    <div class="kpi-value" id="kpi-cvr">—</div>
+    <div class="kpi-sub">Vue → Achat</div>
+    <div class="kpi-trend trend-down">↓ -0.8%</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-label">Revenu / visiteur</div>
+    <div class="kpi-value" id="kpi-rpv">—</div>
+    <div class="kpi-sub">Avg revenue per visitor</div>
+    <div class="kpi-trend trend-up">↑ +5.7%</div>
+  </div>
+</div>
+
+<!-- MAIN CHARTS -->
+<div class="main-grid">
+  <!-- Funnel -->
+  <div class="chart-card">
+    <div class="chart-title">Funnel Analysis</div>
+    <div class="chart-subtitle">Conversion par étape | 30 derniers jours</div>
+    <div class="funnel-container" id="funnel-container"></div>
+  </div>
+
+  <!-- Donut par source -->
+  <div class="chart-card">
+    <div class="chart-title">Traffic Sources</div>
+    <div class="chart-subtitle">Répartition du CA</div>
+    <canvas id="donutChart"></canvas>
+  </div>
+</div>
+
+<!-- BOTTOM CHARTS -->
+<div class="bottom-grid">
+  <!-- Revenus par source (bar) -->
+  <div class="chart-card">
+    <div class="chart-title">Revenue by Source</div>
+    <div class="chart-subtitle">CA & taux de conversion</div>
+    <div style="overflow-x:auto">
+      <table class="source-table" id="source-table"></table>
+    </div>
+  </div>
+
+  <!-- Temps de conversion -->
+  <div class="chart-card">
+    <div class="chart-title">Time to Convert</div>
+    <div class="chart-subtitle">Parcours client moyen</div>
+    <div class="time-metrics">
+      <div class="time-metric">
+        <div class="time-metric-label">Vue → Panier</div>
+        <div><span class="time-metric-value">14</span> <span class="time-metric-unit">min en moyenne</span></div>
+      </div>
+      <div class="time-metric">
+        <div class="time-metric-label">Panier → Achat</div>
+        <div><span class="time-metric-value">38</span> <span class="time-metric-unit">min en moyenne</span></div>
+      </div>
+      <div class="time-metric">
+        <div class="time-metric-label">Vue → Achat (total)</div>
+        <div><span class="time-metric-value" style="color:var(--accent)">52</span> <span class="time-metric-unit">min en moyenne</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Évolution mensuelle -->
+  <div class="chart-card">
+    <div class="chart-title">Revenue Trend</div>
+    <div class="chart-subtitle">Évolution mensuelle</div>
+    <canvas id="lineChart"></canvas>
+  </div>
+</div>
+
+<footer>
+  <p>Projet Data · Analyse E-commerce KitchenTools · SQL avancé + JavaScript · Dataset Kaggle</p>
+  <div class="tech-pills">
+    <span class="pill">MySQL</span>
+    <span class="pill">CTEs</span>
+    <span class="pill">TIMESTAMPDIFF</span>
+    <span class="pill">Chart.js</span>
+    <span class="pill">JavaScript</span>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+// ── DATA chargée depuis data.js (généré par generate_data.py) ───────────────
+// Pour mettre à jour les chiffres : python generate_data.py
+// DATA est déclarée dans data.js, chargé juste avant ce script.
+
+// ── DATE ─────────────────────────────────────────────────────────────────────
+document.getElementById('current-date').textContent =
+  new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+
+// ── KPI ANIMATION ─────────────────────────────────────────────────────────────
+function animateValue(el, end, prefix='', suffix='', decimals=0) {
+  let start = 0, duration = 1200;
+  let startTime = null;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    let progress = Math.min((ts - startTime) / duration, 1);
+    let eased = 1 - Math.pow(1 - progress, 3);
+    let val = start + (end - start) * eased;
+    el.textContent = prefix + (decimals > 0 ? val.toFixed(decimals) : Math.floor(val).toLocaleString('fr-FR')) + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+animateValue(document.getElementById('kpi-ca'),  DATA.kpi.ca,  '', ' DH');
+animateValue(document.getElementById('kpi-aov'), DATA.kpi.aov, '', ' DH');
+animateValue(document.getElementById('kpi-cvr'), DATA.kpi.cvr, '', ' %', 1);
+animateValue(document.getElementById('kpi-rpv'), DATA.kpi.rpv, '', ' DH', 1);
+
+// ── FUNNEL ────────────────────────────────────────────────────────────────────
+const funnelContainer = document.getElementById('funnel-container');
+const maxCount = DATA.funnel[0].count;
+
+DATA.funnel.forEach((step, i) => {
+  const pct = Math.round(step.count / maxCount * 100);
+  const drop = i > 0
+    ? '−' + Math.round((1 - step.count / DATA.funnel[i-1].count) * 100) + '%'
+    : '';
+
+  const div = document.createElement('div');
+  div.className = 'funnel-step';
+  div.style.animationDelay = (i * 0.08) + 's';
+  div.innerHTML = `
+    <div class="funnel-label">${step.label}</div>
+    <div class="funnel-bar-wrap">
+      <div class="funnel-bar" id="fbar-${i}" style="width:0%;background:${step.color};color:#0d0f14">
+        ${pct}%
+      </div>
+    </div>
+    <div class="funnel-count">${step.count.toLocaleString('fr-FR')}</div>
+    <div class="funnel-drop">${drop}</div>
+  `;
+  funnelContainer.appendChild(div);
+
+  setTimeout(() => {
+    document.getElementById('fbar-' + i).style.width = pct + '%';
+  }, 300 + i * 120);
+});
+
+// ── DONUT CHART ──────────────────────────────────────────────────────────────
+new Chart(document.getElementById('donutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: DATA.sources.map(s => s.source),
+    datasets: [{
+      data: DATA.sources.map(s => s.revenue),
+      backgroundColor: DATA.sources.map(s => s.color + 'cc'),
+      borderColor: DATA.sources.map(s => s.color),
+      borderWidth: 1.5,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '68%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#9ca3af', font: { family: 'DM Mono', size: 10 }, padding: 12, boxWidth: 10 }
+      },
+      tooltip: {
+        backgroundColor: '#13161e',
+        borderColor: '#252a38',
+        borderWidth: 1,
+        titleColor: '#e8eaf0',
+        bodyColor: '#9ca3af',
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.toLocaleString('fr-FR')} DH`
+        }
+      }
+    }
+  }
+});
+
+// ── SOURCE TABLE ──────────────────────────────────────────────────────────────
+const tbl = document.getElementById('source-table');
+tbl.innerHTML = `<thead><tr>
+  <th>Source</th><th>CA (DH)</th><th>Taux conv.</th><th></th>
+</tr></thead><tbody>` +
+DATA.sources.map(s => {
+  const cvr = (s.purchases / s.visitors * 100).toFixed(1);
+  return `<tr>
+    <td><span class="source-badge" style="background:${s.color}"></span>${s.source}</td>
+    <td style="color:var(--text)">${s.revenue.toLocaleString('fr-FR')}</td>
+    <td>${cvr}%</td>
+    <td>
+      <div class="conv-bar">
+        <div class="conv-track"><div class="conv-fill" style="width:${cvr*10}%;background:${s.color}"></div></div>
+      </div>
+    </td>
+  </tr>`;
+}).join('') + '</tbody>';
+
+// ── LINE CHART ────────────────────────────────────────────────────────────────
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: DATA.monthly.labels,
+    datasets: [{
+      label: 'Revenue (DH)',
+      data: DATA.monthly.revenue,
+      borderColor: '#e8c547',
+      backgroundColor: 'rgba(232,197,71,0.08)',
+      borderWidth: 2,
+      pointBackgroundColor: '#e8c547',
+      pointRadius: 3,
+      pointHoverRadius: 6,
+      fill: true,
+      tension: 0.4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#13161e',
+        borderColor: '#252a38',
+        borderWidth: 1,
+        titleColor: '#e8eaf0',
+        bodyColor: '#9ca3af',
+        callbacks: { label: ctx => ` ${ctx.parsed.y.toLocaleString('fr-FR')} DH` }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#1a1e2a' }, ticks: { color: '#6b7280', font: { family: 'DM Mono', size: 9 } } },
+      y: { grid: { color: '#1a1e2a' }, ticks: { color: '#6b7280', font: { family: 'DM Mono', size: 9 },
+           callback: v => (v/1000) + 'k' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
