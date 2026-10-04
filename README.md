@@ -4,7 +4,7 @@ Analysez le comportement des visiteurs d'une boutique en ligne : tunnel de conve
 
 Cette **version 2** automatise entièrement le pipeline : un **script Python (pandas)** lit le fichier de données, calcule tous les indicateurs et génère `data.js`, consommé par un **dashboard HTML/JavaScript (Chart.js)**. Elle remplace la [version 1](#transition-v1--v2-de-mysql-manuel-à-python-automatisé), qui reposait sur MySQL et des chiffres copiés à la main.
 
-> 📦 **Version 1 (MySQL, manuelle)** : dépôt [`mon_projet_data`](https://github.com/<votre-compte>/mon_projet_data) — conservé en ligne comme référence historique.
+> 📦 **Version 1 (MySQL, manuelle)** : dépôt [`mon_projet_data`](https://github.com/Asmae-coder455/mon_projet_data) — conservé en ligne comme référence historique.
 
 ---
 
