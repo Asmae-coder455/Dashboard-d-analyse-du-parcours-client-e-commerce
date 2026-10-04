@@ -1,0 +1,2 @@
+# Dashboard d'analyse du parcours client e-commerce
+Analysez le comportement des visiteurs d'une boutique en ligne : tunnel de conversion, performance des sources de trafic, chiffre d'affaires mensuel et indicateurs clés (CA, panier moyen, taux de conversion, revenu par visiteur). Un script Python (pandas) calcule les indicateurs à partir d'un jeu de données d'événements utilisateurs et génère un fichier data.js, consommé par un dashboard HTML/JavaScript (Chart.js).
